@@ -5,7 +5,7 @@ hero:
   text: 记录技术与生活
   tagline: 写代码，也写点别的。
   image:
-    src: /jkpa/images/bg1.jpg
+    src: /images/bg1.jpg
     alt: jkpa
   actions:
     - theme: brand
