@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex" />
-<title>整站视觉调参面板 · jkpa 的博客</title>
+<title>可视化编辑器 · jkpa 的博客</title>
 <style>
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -18,18 +18,26 @@
     overflow: hidden;
   }
   header {
-    display: flex; align-items: center; gap: 14px;
-    padding: 11px 18px; border-bottom: 1px solid #e3e3e8; background: #fff; flex-shrink: 0;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px; border-bottom: 1px solid #e3e3e8; background: #fff; flex-shrink: 0;
   }
   header h1 { font-size: 15px; margin: 0; font-weight: 600; }
   header .hint { font-size: 12px; color: #82828c; }
   header .spacer { flex: 1; }
   header a { font-size: 12px; color: #646cff; text-decoration: none; border: 1px solid #d9d8ff; border-radius: 6px; padding: 4px 10px; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #1f2024; cursor: pointer; user-select: none; }
+  .toggle input { accent-color: #646cff; width: 15px; height: 15px; }
   main { flex: 1; display: flex; min-height: 0; }
-  .panel { width: 330px; flex-shrink: 0; background: #fff; border-right: 1px solid #e3e3e8; overflow-y: auto; padding: 14px 16px 36px; }
+  .panel { width: 336px; flex-shrink: 0; background: #fff; border-right: 1px solid #e3e3e8; overflow-y: auto; padding: 0 16px 36px; }
+  .pickbar { position: sticky; top: 0; z-index: 3; background: #fff; padding: 12px 0 10px; border-bottom: 1px solid #f0f0f3; }
+  .pickbar .sel { font-size: 13px; font-weight: 600; color: #646cff; margin-bottom: 3px; }
+  .pickbar .tip { font-size: 11px; color: #9b9ba4; line-height: 1.5; }
+  .section { margin: 0 -8px; padding: 0 8px 6px; border-radius: 10px; transition: background .18s, box-shadow .18s; }
+  .section.active { background: #f3f3ff; box-shadow: inset 3px 0 0 #646cff; }
   h2 { font-size: 12px; font-weight: 600; color: #82828c; letter-spacing: .04em; margin: 20px 0 10px; }
+  .section.active h2 { color: #646cff; }
   h2:first-of-type { margin-top: 4px; }
-  .group { margin-bottom: 14px; }
+  .group { margin-bottom: 13px; }
   .group > label { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
   .group .val { font-size: 11.5px; color: #646cff; font-family: ui-monospace, monospace; font-weight: 400; }
   .group .desc { font-size: 11px; color: #9b9ba4; margin-top: 3px; line-height: 1.5; }
@@ -48,132 +56,153 @@
   .actions button { flex: 1; height: 34px; border-radius: 8px; border: 1px solid #e3e3e8; background: #fff; font-size: 13px; cursor: pointer; color: #1f2024; }
   .actions button.primary { background: #646cff; border-color: #646cff; color: #fff; }
   .actions button:hover { opacity: .88; }
-  textarea { width: 100%; height: 190px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6; border: 1px solid #e3e3e8; border-radius: 8px; padding: 8px 10px; resize: vertical; background: #fafafa; color: #1f2024; margin-top: 10px; }
+  textarea { width: 100%; height: 170px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6; border: 1px solid #e3e3e8; border-radius: 8px; padding: 8px 10px; resize: vertical; background: #fafafa; color: #1f2024; margin-top: 10px; }
   .preview { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #ececed; }
   .preview .bar { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 12px; color: #82828c; background: #fff; border-bottom: 1px solid #e3e3e8; flex-shrink: 0; }
   .preview .bar select { width: 150px; height: 24px; font-size: 12px; }
   .preview iframe { flex: 1; width: 100%; border: 0; background: #fff; }
-  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(12px); background: #1f2024; color: #fff; font-size: 13px; padding: 9px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(12px); background: #1f2024; color: #fff; font-size: 13px; padding: 9px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 99; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 <header>
-  <h1>整站视觉调节</h1>
-  <span class="hint">左调右看，导出 CSS 保存即生效</span>
+  <h1>可视化编辑器</h1>
+  <label class="toggle"><input type="checkbox" id="pickerOn" checked />指哪调哪</label>
+  <span class="hint">鼠标移到右侧页面 → 蓝框高亮 → 点一下就跳转对应设置</span>
   <span class="spacer"></span>
   <a href="../" target="_blank" rel="noopener">打开博客 ↗</a>
 </header>
 
 <main>
   <aside class="panel">
-    <h2>全局配色</h2>
-    <div class="group">
-      <label>主色调 <span class="val" id="v-brand">#646cff</span></label>
-      <input type="color" id="brand" value="#646cff" />
-      <div class="swatches">
-        <button data-color="#646cff" style="background:#646cff" title="紫蓝"></button>
-        <button data-color="#0f6e56" style="background:#0f6e56" title="墨绿"></button>
-        <button data-color="#d85a30" style="background:#d85a30" title="暖橙"></button>
-        <button data-color="#d4537e" style="background:#d4537e" title="莓红"></button>
-        <button data-color="#185fa5" style="background:#185fa5" title="海蓝"></button>
-        <button data-color="#2c2c2a" style="background:#2c2c2a" title="极简黑"></button>
+    <div class="pickbar">
+      <div class="sel" id="selName">当前选中：页面全局</div>
+      <div class="tip" id="selTip">点击右侧任意区域，左侧会自动跳到对应设置</div>
+    </div>
+
+    <div class="section" id="g-global">
+      <h2>全局配色</h2>
+      <div class="group">
+        <label>主色调 <span class="val" id="v-brand">#646cff</span></label>
+        <input type="color" id="brand" value="#646cff" />
+        <div class="swatches">
+          <button data-color="#646cff" style="background:#646cff" title="紫蓝"></button>
+          <button data-color="#0f6e56" style="background:#0f6e56" title="墨绿"></button>
+          <button data-color="#d85a30" style="background:#d85a30" title="暖橙"></button>
+          <button data-color="#d4537e" style="background:#d4537e" title="莓红"></button>
+          <button data-color="#185fa5" style="background:#185fa5" title="海蓝"></button>
+          <button data-color="#2c2c2a" style="background:#2c2c2a" title="极简黑"></button>
+        </div>
+      </div>
+
+      <div class="group">
+        <label>当前编辑</label>
+        <div class="seg" id="colorMode">
+          <button data-mode="light" class="on">浅色模式</button>
+          <button data-mode="dark">深色模式</button>
+        </div>
+        <div class="desc">右侧预览会同步切换深浅模式</div>
+      </div>
+
+      <div class="grid2">
+        <div class="group">
+          <label>页面背景 <span class="val" id="v-bg"></span></label>
+          <input type="color" id="cBg" />
+        </div>
+        <div class="group">
+          <label>区块背景 <span class="val" id="v-bgAlt"></span></label>
+          <input type="color" id="cBgAlt" />
+        </div>
+        <div class="group">
+          <label>文字颜色 <span class="val" id="v-text"></span></label>
+          <input type="color" id="cText" />
+        </div>
+        <div class="group">
+          <label>导航背景 <span class="val" id="v-navBg"></span></label>
+          <input type="color" id="cNavBg" />
+        </div>
       </div>
     </div>
 
-    <div class="group">
-      <label>当前编辑</label>
-      <div class="seg" id="colorMode">
-        <button data-mode="light" class="on">浅色模式</button>
-        <button data-mode="dark">深色模式</button>
-      </div>
-      <div class="desc">右侧预览会同步切换深浅模式</div>
-    </div>
-
-    <div class="grid2">
+    <div class="section" id="g-nav">
+      <h2>导航与页脚</h2>
       <div class="group">
-        <label>页面背景 <span class="val" id="v-bg"></span></label>
-        <input type="color" id="cBg" />
+        <label>导航高度 <span class="val" id="v-navHeight">64px</span></label>
+        <input type="range" id="navHeight" min="48" max="88" step="2" value="64" />
       </div>
       <div class="group">
-        <label>区块背景 <span class="val" id="v-bgAlt"></span></label>
-        <input type="color" id="cBgAlt" />
-      </div>
-      <div class="group">
-        <label>文字颜色 <span class="val" id="v-text"></span></label>
-        <input type="color" id="cText" />
-      </div>
-      <div class="group">
-        <label>导航背景 <span class="val" id="v-navBg"></span></label>
-        <input type="color" id="cNavBg" />
+        <label>导航背景色 <span class="val" id="v-navBg2"></span></label>
+        <input type="color" id="cNavBg2" />
+        <div class="desc">与上方「导航背景」同一个设置</div>
       </div>
     </div>
 
-    <h2>导航栏</h2>
-    <div class="group">
-      <label>导航高度 <span class="val" id="v-navHeight">64px</span></label>
-      <input type="range" id="navHeight" min="48" max="88" step="2" value="64" />
-    </div>
-
-    <h2>首页 hero</h2>
-    <div class="group">
-      <label>背景图透明度 <span class="val" id="v-opacity">0.22</span></label>
-      <input type="range" id="opacity" min="0" max="0.6" step="0.01" value="0.22" />
-    </div>
-    <div class="group">
-      <label>轮播一圈时长 <span class="val" id="v-speed">32s</span></label>
-      <input type="range" id="speed" min="8" max="64" step="2" value="32" />
-      <div class="desc">每张停留 = 时长 ÷ 4</div>
-    </div>
-    <div class="group">
-      <label>背景圆角 <span class="val" id="v-radius">16px</span></label>
-      <input type="range" id="radius" min="0" max="32" step="1" value="16" />
-    </div>
-    <div class="group">
-      <label>首页右侧大图</label>
-      <select id="hero">
-        <option value="1">bg1</option>
-        <option value="2">bg2</option>
-        <option value="3">bg3</option>
-        <option value="4">bg4</option>
-      </select>
-    </div>
-    <div class="group">
-      <div class="row"><input type="checkbox" id="heroOn" checked /><label for="heroOn">显示背景轮播</label></div>
-    </div>
-    <div class="grid2">
+    <div class="section" id="g-hero">
+      <h2>首页首屏</h2>
       <div class="group">
-        <label>标题渐变·起 <span class="val" id="v-gradA"></span></label>
-        <input type="color" id="gradA" value="#bd34fe" />
+        <label>背景图透明度 <span class="val" id="v-opacity">0.22</span></label>
+        <input type="range" id="opacity" min="0" max="0.6" step="0.01" value="0.22" />
       </div>
       <div class="group">
-        <label>标题渐变·止 <span class="val" id="v-gradB"></span></label>
-        <input type="color" id="gradB" value="#41d1ff" />
+        <label>轮播一圈时长 <span class="val" id="v-speed">32s</span></label>
+        <input type="range" id="speed" min="8" max="64" step="2" value="32" />
+        <div class="desc">每张停留 = 时长 ÷ 4</div>
+      </div>
+      <div class="group">
+        <label>背景圆角 <span class="val" id="v-radius">16px</span></label>
+        <input type="range" id="radius" min="0" max="32" step="1" value="16" />
+      </div>
+      <div class="group">
+        <label>首屏右侧大图</label>
+        <select id="hero">
+          <option value="1">bg1</option>
+          <option value="2">bg2</option>
+          <option value="3">bg3</option>
+          <option value="4">bg4</option>
+        </select>
+      </div>
+      <div class="group">
+        <div class="row"><input type="checkbox" id="heroOn" checked /><label for="heroOn">显示背景轮播</label></div>
+      </div>
+      <div class="grid2">
+        <div class="group">
+          <label>标题渐变·起 <span class="val" id="v-gradA"></span></label>
+          <input type="color" id="gradA" value="#bd34fe" />
+        </div>
+        <div class="group">
+          <label>标题渐变·止 <span class="val" id="v-gradB"></span></label>
+          <input type="color" id="gradB" value="#41d1ff" />
+        </div>
       </div>
     </div>
 
-    <h2>正文排版</h2>
-    <div class="group">
-      <label>正文字号 <span class="val" id="v-fontSize">16px</span></label>
-      <input type="range" id="fontSize" min="13" max="19" step="1" value="16" />
-    </div>
-    <div class="group">
-      <label>行高 <span class="val" id="v-lineHeight">1.75</span></label>
-      <input type="range" id="lineHeight" min="1.4" max="2.2" step="0.05" value="1.75" />
-    </div>
-    <div class="group">
-      <label>内容宽度 <span class="val" id="v-contentWidth">688px</span></label>
-      <input type="range" id="contentWidth" min="600" max="1200" step="8" value="688" />
-      <div class="desc">文章正文区域最大宽度</div>
+    <div class="section" id="g-typo">
+      <h2>正文排版</h2>
+      <div class="group">
+        <label>正文字号 <span class="val" id="v-fontSize">16px</span></label>
+        <input type="range" id="fontSize" min="13" max="19" step="1" value="16" />
+      </div>
+      <div class="group">
+        <label>行高 <span class="val" id="v-lineHeight">1.75</span></label>
+        <input type="range" id="lineHeight" min="1.4" max="2.2" step="0.05" value="1.75" />
+      </div>
+      <div class="group">
+        <label>内容宽度 <span class="val" id="v-contentWidth">688px</span></label>
+        <input type="range" id="contentWidth" min="600" max="1200" step="8" value="688" />
+        <div class="desc">文章正文区域最大宽度</div>
+      </div>
     </div>
 
-    <h2>导出</h2>
-    <div class="actions">
-      <button class="primary" id="copy">复制 CSS</button>
-      <button id="reset">恢复默认</button>
+    <div class="section" id="g-export">
+      <h2>导出</h2>
+      <div class="actions">
+        <button class="primary" id="copy">复制 CSS</button>
+        <button id="reset">恢复默认</button>
+      </div>
+      <textarea id="output" readonly></textarea>
+      <div class="desc">粘贴到 docs/.vitepress/theme/style.css 顶部「视觉设置区」即可全站生效</div>
     </div>
-    <textarea id="output" readonly></textarea>
-    <div class="desc">粘贴到 docs/.vitepress/theme/style.css 顶部「视觉设置区」即可全站生效</div>
   </aside>
 
   <section class="preview">
@@ -217,16 +246,19 @@ const inputs = {
   brand: $('brand'), opacity: $('opacity'), speed: $('speed'), radius: $('radius'),
   hero: $('hero'), heroOn: $('heroOn'), gradA: $('gradA'), gradB: $('gradB'),
   fontSize: $('fontSize'), lineHeight: $('lineHeight'), contentWidth: $('contentWidth'),
-  navHeight: $('navHeight'), cBg: $('cBg'), cBgAlt: $('cBgAlt'), cText: $('cText'), cNavBg: $('cNavBg'),
+  navHeight: $('navHeight'), cBg: $('cBg'), cBgAlt: $('cBgAlt'), cText: $('cText'),
+  cNavBg: $('cNavBg'), cNavBg2: $('cNavBg2'),
 };
 
-const COLOR_KEYS = { cBg: 'bg', cBgAlt: 'bgAlt', cText: 'text', cNavBg: 'navBg' };
+const COLOR_KEYS = { cBg: 'bg', cBgAlt: 'bgAlt', cText: 'text', cNavBg: 'navBg', cNavBg2: 'navBg' };
 
 function syncColorInputs() {
   const m = state.modes[state.colorMode];
   const vals = [m.bg, m.bgAlt, m.text, m.navBg];
   ['cBg', 'cBgAlt', 'cText', 'cNavBg'].forEach((id, i) => { inputs[id].value = vals[i]; });
+  inputs.cNavBg2.value = m.navBg;
   ['v-bg', 'v-bgAlt', 'v-text', 'v-navBg'].forEach((id, i) => { $(id).textContent = vals[i]; });
+  $('v-navBg2').textContent = m.navBg;
 }
 
 function buildCss() {
@@ -288,6 +320,82 @@ function apply() {
   if (img) img.setAttribute('src', '/jkpa/images/bg' + state.hero + '.jpg');
 
   doc.documentElement.classList.toggle('dark', state.colorMode === 'dark');
+  setupInspector(doc);
+}
+
+const MAP = [
+  { sel: '.VPHero .name, .VPHero .text, .VPHero .tagline', group: 'hero', name: '首屏标题与文案' },
+  { sel: '.VPHero .image-container', group: 'hero', name: '首屏右侧大图' },
+  { sel: '.VPHero .container', group: 'hero', name: '首屏背景轮播' },
+  { sel: '.VPButton', group: 'hero', name: '首屏按钮' },
+  { sel: '.VPNav', group: 'nav', name: '顶部导航栏' },
+  { sel: '.VPFooter', group: 'nav', name: '页脚' },
+  { sel: '.vp-doc, .VPDoc .content-container', group: 'typo', name: '文章正文排版' },
+  { sel: 'h1, h2, h3, h4, p, li, code, pre', group: 'typo', name: '文字内容' },
+  { sel: 'a', group: 'global', name: '链接（受主色调控制）' },
+];
+
+let pickerOn = true;
+$('pickerOn').addEventListener('change', (e) => { pickerOn = e.target.checked; });
+
+function selectGroup(group, name, tip) {
+  document.querySelectorAll('.section').forEach((s) => {
+    s.classList.toggle('active', s.id === 'g-' + group);
+  });
+  $('selName').textContent = '当前选中：' + name;
+  $('selTip').textContent = tip || '左侧已跳到可调整的参数';
+  const target = document.getElementById('g-' + group);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setupInspector(doc) {
+  if (doc.__jkpaInspector) return;
+  doc.__jkpaInspector = true;
+
+  let last = null;
+  const badge = doc.createElement('div');
+  badge.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:2147483647;' +
+    'background:rgba(31,32,36,.9);color:#fff;font:12px/1.5 system-ui,sans-serif;' +
+    'padding:4px 10px;border-radius:6px;pointer-events:none;display:none;';
+  doc.body.appendChild(badge);
+
+  const clear = () => {
+    if (last) { last.style.outline = ''; last.style.outlineOffset = ''; }
+    last = null;
+    badge.style.display = 'none';
+  };
+
+  const matchRule = (el) => {
+    for (const rule of MAP) {
+      if (el.closest(rule.sel)) return rule;
+    }
+    return { group: 'global', name: '页面全局（背景与文字色）' };
+  };
+
+  doc.addEventListener('mouseover', (e) => {
+    if (!pickerOn) return;
+    const el = e.target;
+    if (!el || el.nodeType !== 1 || el.id === 'jkpa-studio' || el === badge) return;
+    clear();
+    el.style.outline = '2px solid #646cff';
+    el.style.outlineOffset = '2px';
+    last = el;
+    badge.textContent = '点击调整：' + matchRule(el).name;
+    badge.style.display = 'block';
+  }, true);
+
+  doc.addEventListener('mouseout', () => { if (pickerOn) clear(); }, true);
+
+  doc.addEventListener('click', (e) => {
+    if (!pickerOn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rule = matchRule(e.target);
+    selectGroup(rule.group, rule.name);
+    clear();
+  }, true);
+
+  doc.addEventListener('mousedown', (e) => { if (pickerOn) { e.preventDefault(); e.stopPropagation(); } }, true);
 }
 
 function bind(id, key, parse) {
@@ -370,6 +478,7 @@ function show(msg) {
   show.t = setTimeout(() => toast.classList.remove('show'), 2200);
 }
 
+selectGroup('global', '页面全局', '点击右侧任意区域，左侧会自动跳到对应设置');
 apply();
 </script>
 </body>
