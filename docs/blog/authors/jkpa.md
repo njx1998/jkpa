@@ -1,6 +1,6 @@
 ---
 name: jkpa
-avatar: /favicon.svg
+avatar: /jkpa/images/bg3.jpg
 comment: false
 ---
 
