@@ -1,0 +1,17 @@
+{
+  "name": "jkpa-blog",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "@chunge16/vitepress-blogs-theme": "^1.0.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "tailwindcss": "^4.2.2",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.31"
+  }
+}
