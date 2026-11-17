@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>视觉调参面板 · jkpa 的博客</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f6f6f7;
+    color: #1f2024;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e3e3e8;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  header .hint { font-size: 12px; color: #82828c; }
+  header .spacer { flex: 1; }
+  header a {
+    font-size: 12px;
+    color: #646cff;
+    text-decoration: none;
+    border: 1px solid #d9d8ff;
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+  main { flex: 1; display: flex; min-height: 0; }
+  .panel {
+    width: 320px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e3e3e8;
+    overflow-y: auto;
+    padding: 16px 18px 32px;
+  }
+  .group { margin-bottom: 20px; }
+  .group > label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .group .val { font-size: 12px; color: #646cff; font-family: ui-monospace, monospace; font-weight: 400; }
+  .group .desc { font-size: 11px; color: #9b9ba4; margin-top: 4px; line-height: 1.5; }
+  input[type="range"] { width: 100%; accent-color: #646cff; }
+  input[type="color"] {
+    width: 100%;
+    height: 34px;
+    border: 1px solid #e3e3e8;
+    border-radius: 8px;
+    padding: 2px;
+    background: #fff;
+    cursor: pointer;
+  }
+  select, .swatches { width: 100%; }
+  select {
+    height: 32px;
+    border: 1px solid #e3e3e8;
+    border-radius: 8px;
+    padding: 0 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #1f2024;
+  }
+  .swatches { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .swatches button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #e3e3e8;
+    cursor: pointer;
+    padding: 0;
+  }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .row input[type="checkbox"] { accent-color: #646cff; width: 15px; height: 15px; }
+  .actions { display: flex; gap: 8px; margin-top: 4px; }
+  .actions button {
+    flex: 1;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #e3e3e8;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    color: #1f2024;
+  }
+  .actions button.primary { background: #646cff; border-color: #646cff; color: #fff; }
+  .actions button:hover { opacity: .88; }
+  .out { margin-top: 12px; }
+  .out textarea {
+    width: 100%;
+    height: 150px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.6;
+    border: 1px solid #e3e3e8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    resize: vertical;
+    background: #fafafa;
+    color: #1f2024;
+  }
+  .preview { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #ececed; }
+  .preview .bar {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    font-size: 12px;
+    color: #82828c;
+    background: #fff;
+    border-bottom: 1px solid #e3e3e8;
+    flex-shrink: 0;
+  }
+  .preview iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(12px);
+    background: #1f2024;
+    color: #fff;
+    font-size: 13px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header>
+  <h1>视觉调参面板</h1>
+  <span class="hint">拖动滑块 → 右侧实时预览 → 导出 CSS 保存即可生效</span>
+  <span class="spacer"></span>
+  <a href="../" target="_blank" rel="noopener">打开博客 ↗</a>
+</header>
+
+<main>
+  <aside class="panel">
+    <div class="group">
+      <label>主色调 <span class="val" id="v-brand">#646cff</span></label>
+      <input type="color" id="brand" value="#646cff" />
+      <div class="swatches">
+        <button data-color="#646cff" style="background:#646cff" title="紫蓝"></button>
+        <button data-color="#0f6e56" style="background:#0f6e56" title="墨绿"></button>
+        <button data-color="#d85a30" style="background:#d85a30" title="暖橙"></button>
+        <button data-color="#d4537e" style="background:#d4537e" title="莓红"></button>
+        <button data-color="#185fa5" style="background:#185fa5" title="海蓝"></button>
+        <button data-color="#2c2c2a" style="background:#2c2c2a" title="极简黑"></button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label>背景图透明度 <span class="val" id="v-opacity">0.22</span></label>
+      <input type="range" id="opacity" min="0" max="0.6" step="0.01" value="0.22" />
+      <div class="desc">数值越大图片越明显，建议 0.12 ~ 0.30</div>
+    </div>
+
+    <div class="group">
+      <label>轮播一圈时长 <span class="val" id="v-speed">32s</span></label>
+      <input type="range" id="speed" min="8" max="64" step="2" value="32" />
+      <div class="desc">每张停留 = 时长 ÷ 4</div>
+    </div>
+
+    <div class="group">
+      <label>背景图圆角 <span class="val" id="v-radius">16px</span></label>
+      <input type="range" id="radius" min="0" max="32" step="1" value="16" />
+    </div>
+
+    <div class="group">
+      <label>文章正文字号 <span class="val" id="v-font">16px</span></label>
+      <input type="range" id="font" min="13" max="19" step="1" value="16" />
+    </div>
+
+    <div class="group">
+      <label>首页右侧大图</label>
+      <select id="hero">
+        <option value="1">bg1（当前）</option>
+        <option value="2">bg2</option>
+        <option value="3">bg3</option>
+        <option value="4">bg4</option>
+      </select>
+    </div>
+
+    <div class="group">
+      <div class="row"><input type="checkbox" id="bgenabled" checked /><label for="bgenabled">显示首页背景轮播</label></div>
+    </div>
+
+    <div class="group">
+      <div class="actions">
+        <button class="primary" id="copy">导出并复制 CSS</button>
+        <button id="reset">恢复默认</button>
+      </div>
+      <div class="out">
+        <textarea id="output" readonly></textarea>
+      </div>
+      <div class="desc">把这段 CSS 粘贴到 style.css 的「视觉设置区」里保存，推送到 GitHub 后自动生效。</div>
+    </div>
+  </aside>
+
+  <section class="preview">
+    <div class="bar">实时预览 · <span id="pv-url">../</span></div>
+    <iframe id="frame" src="../"></iframe>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULTS = { brand: '#646cff', opacity: 0.22, speed: 32, radius: 16, font: 16, hero: '1', bgenabled: true };
+const frame = document.getElementById('frame');
+const out = document.getElementById('output');
+const toast = document.getElementById('toast');
+
+const el = {
+  brand: document.getElementById('brand'),
+  opacity: document.getElementById('opacity'),
+  speed: document.getElementById('speed'),
+  radius: document.getElementById('radius'),
+  font: document.getElementById('font'),
+  hero: document.getElementById('hero'),
+  bgenabled: document.getElementById('bgenabled'),
+};
+
+function state() {
+  return {
+    brand: el.brand.value,
+    opacity: parseFloat(el.opacity.value),
+    speed: parseInt(el.speed.value, 10),
+    radius: parseInt(el.radius.value, 10),
+    font: parseInt(el.font.value, 10),
+    hero: el.hero.value,
+    bgenabled: el.bgenabled.checked,
+  };
+}
+
+function cssText(s) {
+  return `:root {
+  --jkpa-brand: ${s.brand};
+  --jkpa-bg-opacity: ${s.bgenabled ? s.opacity : 0};
+  --jkpa-bg-speed: ${s.speed}s;
+  --jkpa-radius: ${s.radius}px;
+  --jkpa-font-size: ${s.font}px;
+}`;
+}
+
+function apply() {
+  const s = state();
+  document.getElementById('v-brand').textContent = s.brand;
+  document.getElementById('v-opacity').textContent = s.opacity.toFixed(2);
+  document.getElementById('v-speed').textContent = s.speed + 's';
+  document.getElementById('v-radius').textContent = s.radius + 'px';
+  document.getElementById('v-font').textContent = s.font + 'px';
+  out.value = cssText(s);
+
+  const doc = frame.contentDocument;
+  if (!doc || !doc.head) return;
+
+  let style = doc.getElementById('jkpa-studio');
+  if (!style) {
+    style = doc.createElement('style');
+    style.id = 'jkpa-studio';
+    doc.head.appendChild(style);
+  }
+  style.textContent = cssText(s) + (s.bgenabled ? '' : '\n.VPHero .container::before { display: none !important; }');
+
+  const img = doc.querySelector('.VPHero .image-container img');
+  if (img) img.setAttribute('src', '/jkpa/images/bg' + s.hero + '.jpg');
+}
+
+Object.values(el).forEach((input) => {
+  input.addEventListener('input', apply);
+  input.addEventListener('change', apply);
+});
+
+document.querySelectorAll('.swatches button').forEach((b) => {
+  b.addEventListener('click', () => {
+    el.brand.value = b.dataset.color;
+    apply();
+  });
+});
+
+frame.addEventListener('load', apply);
+
+document.getElementById('copy').addEventListener('click', async () => {
+  apply();
+  try {
+    await navigator.clipboard.writeText(out.value);
+    show('CSS 已复制，粘贴到 style.css 设置区即可');
+  } catch (e) {
+    out.select();
+    document.execCommand('copy');
+    show('已选中，按 Ctrl+C 复制');
+  }
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  el.brand.value = DEFAULTS.brand;
+  el.opacity.value = DEFAULTS.opacity;
+  el.speed.value = DEFAULTS.speed;
+  el.radius.value = DEFAULTS.radius;
+  el.font.value = DEFAULTS.font;
+  el.hero.value = DEFAULTS.hero;
+  el.bgenabled.checked = DEFAULTS.bgenabled;
+  apply();
+  show('已恢复默认');
+});
+
+function show(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(show.t);
+  show.t = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+apply();
+</script>
+</body>
+</html>
