@@ -64,3 +64,42 @@
   --vp-custom-block-tip-text: var(--vp-c-brand-lightest);
   --vp-custom-block-tip-bg: var(--vp-c-brand-dimm);
 }
+
+/**
+ * Home hero background carousel
+ * -------------------------------------------------------------------------- */
+
+.VPHero .container {
+  position: relative;
+}
+
+.VPHero .container::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  z-index: 0;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center 30%;
+  opacity: 0.22;
+  animation: hero-bg-cycle 32s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+.VPHero .container > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hero-bg-cycle {
+  0%, 24.9% { background-image: url('/jkpa/images/bg1.jpg'); }
+  25%, 49.9% { background-image: url('/jkpa/images/bg2.jpg'); }
+  50%, 74.9% { background-image: url('/jkpa/images/bg3.jpg'); }
+  75%, 100% { background-image: url('/jkpa/images/bg4.jpg'); }
+}
+
+.VPHero .image-container img {
+  border-radius: 50%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  object-fit: cover;
+}
