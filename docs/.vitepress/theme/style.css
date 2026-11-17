@@ -4,14 +4,27 @@
   scale: 1.2;
 }
 
+/* ============================================================
+   视觉设置区：只改下面这几个值，就能调整整站外观
+   ============================================================ */
 :root {
-  --vp-c-brand: #646cff;
-  --vp-c-brand-light: #747bff;
-  --vp-c-brand-lighter: #9499ff;
-  --vp-c-brand-lightest: #bcc0ff;
-  --vp-c-brand-dark: #535bf2;
-  --vp-c-brand-darker: #454ce1;
-  --vp-c-brand-dimm: rgba(100, 108, 255, 0.08);
+  --jkpa-brand: #646cff;       /* 主色调（链接、按钮、强调色） */
+  --jkpa-bg-opacity: 0.22;     /* 首页背景图透明度：0 隐藏，1 不透明 */
+  --jkpa-bg-speed: 32s;        /* 背景轮播一圈时长，每张 = 时长/4 */
+  --jkpa-radius: 16px;         /* 背景图圆角 */
+  --jkpa-font-size: 16px;      /* 文章正文字号 */
+}
+/* ============================================================ */
+
+/* 由主色衍生出的完整色阶 */
+:root {
+  --vp-c-brand: var(--jkpa-brand);
+  --vp-c-brand-light: color-mix(in srgb, var(--jkpa-brand) 82%, #ffffff);
+  --vp-c-brand-lighter: color-mix(in srgb, var(--jkpa-brand) 68%, #ffffff);
+  --vp-c-brand-lightest: color-mix(in srgb, var(--jkpa-brand) 50%, #ffffff);
+  --vp-c-brand-dark: color-mix(in srgb, var(--jkpa-brand) 85%, #000000);
+  --vp-c-brand-darker: color-mix(in srgb, var(--jkpa-brand) 70%, #000000);
+  --vp-c-brand-dimm: color-mix(in srgb, var(--jkpa-brand) 8%, transparent);
 }
 
 :root {
@@ -66,7 +79,7 @@
 }
 
 /**
- * Home hero background carousel
+ * 首页 hero 背景轮播
  * -------------------------------------------------------------------------- */
 
 .VPHero .container {
@@ -78,11 +91,11 @@
   position: absolute;
   inset: -24px;
   z-index: 0;
-  border-radius: 16px;
+  border-radius: var(--jkpa-radius);
   background-size: cover;
   background-position: center 30%;
-  opacity: 0.22;
-  animation: hero-bg-cycle 32s steps(1, end) infinite;
+  opacity: var(--jkpa-bg-opacity);
+  animation: hero-bg-cycle var(--jkpa-bg-speed) steps(1, end) infinite;
   pointer-events: none;
 }
 
@@ -102,4 +115,9 @@
   border-radius: 50%;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
   object-fit: cover;
+}
+
+/* 文章正文字号 */
+.vp-doc {
+  font-size: var(--jkpa-font-size);
 }
