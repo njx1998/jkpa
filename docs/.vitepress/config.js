@@ -16,7 +16,7 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/jkpa/favicon.svg' }],
   ],
   themeConfig: {
-    logo: '/favicon.svg',
+    logo: '/jkpa/favicon.svg',
     lastUpdated: true,
     search: {
       provider: 'local',
