@@ -1,0 +1,14 @@
+title: jkpa 的博客
+email: ""
+description: >-
+  一个极简的个人博客，记录技术与生活。
+baseurl: "/jkpa"
+url: "https://njx1998.github.io"
+github_username: njx1998
+theme: minima
+lang: zh-CN
+
+header_pages:
+  - about.md
+
+markdown: kramdown
