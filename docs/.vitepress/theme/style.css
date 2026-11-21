@@ -27,6 +27,12 @@
   --jkpa-bg-alt: #f6f6f7;
   --jkpa-text: #3c3c43;
   --jkpa-nav-bg: #ffffff;
+
+  /* 静态资源路径：站点 base 只在这里出现一次，换仓库名/域名时改这里 */
+  --jkpa-img-bg1: url('/jkpa/images/bg1.jpg');
+  --jkpa-img-bg2: url('/jkpa/images/bg2.jpg');
+  --jkpa-img-bg3: url('/jkpa/images/bg3.jpg');
+  --jkpa-img-bg4: url('/jkpa/images/bg4.jpg');
 }
 
 .dark {
@@ -47,6 +53,18 @@
   --vp-c-brand-dark: color-mix(in srgb, var(--jkpa-brand) 85%, #000000);
   --vp-c-brand-darker: color-mix(in srgb, var(--jkpa-brand) 70%, #000000);
   --vp-c-brand-dimm: color-mix(in srgb, var(--jkpa-brand) 8%, transparent);
+
+  /* 提示块跟随品牌色（浅色模式） */
+  --vp-custom-block-tip-border: var(--vp-c-brand);
+  --vp-custom-block-tip-text: var(--vp-c-brand-darker);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-dimm);
+}
+
+.dark {
+  /* 提示块跟随品牌色（深色模式） */
+  --vp-custom-block-tip-border: var(--vp-c-brand);
+  --vp-custom-block-tip-text: var(--vp-c-brand-lightest);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-dimm);
 }
 
 /* 全局映射：整站的背景、文字、导航 */
@@ -60,6 +78,7 @@
   --vp-nav-height: var(--jkpa-nav-height);
 }
 
+/* 品牌按钮 */
 :root {
   --vp-button-brand-border: var(--vp-c-brand-light);
   --vp-button-brand-text: var(--vp-c-white);
@@ -72,6 +91,7 @@
   --vp-button-brand-active-bg: var(--vp-button-brand-bg);
 }
 
+/* 首页 hero 标题渐变 */
 :root {
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(
@@ -99,18 +119,6 @@
   }
 }
 
-:root {
-  --vp-custom-block-tip-border: var(--vp-c-brand);
-  --vp-custom-block-tip-text: var(--vp-c-brand-darker);
-  --vp-custom-block-tip-bg: var(--vp-c-brand-dimm);
-}
-
-.dark {
-  --vp-custom-block-tip-border: var(--vp-c-brand);
-  --vp-custom-block-tip-text: var(--vp-c-brand-lightest);
-  --vp-custom-block-tip-bg: var(--vp-c-brand-dimm);
-}
-
 /**
  * 首页 hero 背景轮播
  * -------------------------------------------------------------------------- */
@@ -125,6 +133,7 @@
   inset: -24px;
   z-index: 0;
   border-radius: var(--jkpa-radius);
+  background-image: var(--jkpa-img-bg1);
   background-size: cover;
   background-position: center 30%;
   opacity: var(--jkpa-bg-opacity);
@@ -138,10 +147,17 @@
 }
 
 @keyframes hero-bg-cycle {
-  0%, 24.9% { background-image: url('/jkpa/images/bg1.jpg'); }
-  25%, 49.9% { background-image: url('/jkpa/images/bg2.jpg'); }
-  50%, 74.9% { background-image: url('/jkpa/images/bg3.jpg'); }
-  75%, 100% { background-image: url('/jkpa/images/bg4.jpg'); }
+  0%, 24.9% { background-image: var(--jkpa-img-bg1); }
+  25%, 49.9% { background-image: var(--jkpa-img-bg2); }
+  50%, 74.9% { background-image: var(--jkpa-img-bg3); }
+  75%, 100% { background-image: var(--jkpa-img-bg4); }
+}
+
+/* 用户开启「减少动态效果」时停掉无限轮播，只保留一张静态背景 */
+@media (prefers-reduced-motion: reduce) {
+  .VPHero .container::before {
+    animation: none;
+  }
 }
 
 .VPHero .image-container img {

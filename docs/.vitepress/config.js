@@ -4,16 +4,36 @@ import { processData } from '@chunge16/vitepress-blogs-theme/config';
 
 const currentYear = new Date().getFullYear();
 
+const SITE_URL = 'https://njx1998.github.io';
+const BASE = '/jkpa/';
+const SITE_TITLE = 'jkpa 的博客';
+const SITE_DESC = '记录技术与生活';
+const OG_IMAGE = `${SITE_URL}${BASE}images/avatar.jpg`;
+
 export default defineConfig({
-  base: '/jkpa/',
+  base: BASE,
   cleanUrls: true,
-  title: 'jkpa 的博客',
-  description: '记录技术与生活',
+  title: SITE_TITLE,
+  description: SITE_DESC,
   lang: 'zh-CN',
+  sitemap: {
+    // VitePress 不会自动拼接 base，这里必须带上仓库路径
+    hostname: `${SITE_URL}${BASE}`,
+    transformItems: (items) => items.filter((item) => !/(^|\/)404$/.test(item.url)),
+  },
   head: [
+    ['meta', { charset: 'utf-8' }],
+    ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1' }],
     ['meta', { name: 'keywords', content: 'blog, vitepress, 技术, 随笔' }],
     ['meta', { name: 'author', content: 'jkpa' }],
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/jkpa/favicon.svg' }],
+    ['meta', { name: 'theme-color', content: '#646cff' }],
+    ['meta', { property: 'og:site_name', content: SITE_TITLE }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:image', content: OG_IMAGE }],
+    ['meta', { property: 'og:image:alt', content: SITE_TITLE }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
+    ['meta', { name: 'twitter:image', content: OG_IMAGE }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${BASE}favicon.svg` }],
   ],
   themeConfig: {
     logo: '/favicon.svg',
@@ -79,5 +99,26 @@ export default defineConfig({
   },
   async transformPageData(pageData, ctx) {
     await processData(pageData, ctx);
+
+    // 为每个页面补充 canonical 与社交分享所需的 meta
+    const fm = pageData.frontmatter;
+    const path = pageData.relativePath
+      .replace(/(^|\/)index\.md$/, '$1')
+      .replace(/\.md$/, '');
+    const url = `${SITE_URL}${BASE}${path}`;
+    const isHome = path === '';
+    const title = fm.title || pageData.title || SITE_TITLE;
+    const description = fm.description || pageData.description || SITE_DESC;
+
+    if (!fm.head) fm.head = [];
+    fm.head.push(
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:type', content: isHome ? 'website' : 'article' }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: description }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { name: 'twitter:title', content: title }],
+      ['meta', { name: 'twitter:description', content: description }],
+    );
   },
 });

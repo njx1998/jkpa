@@ -1,6 +1,6 @@
 ---
 name: jkpa
-avatar: /images/bg3.jpg
+avatar: /images/avatar.jpg
 comment: false
 ---
 
