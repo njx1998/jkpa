@@ -57,6 +57,7 @@ export default defineConfig({
           { text: '档案', link: '/blog/archives', activeMatch: '/blog/archives' },
         ],
       },
+      { text: '项目', link: '/projects/', activeMatch: '/projects/' },
     ],
     sidebar: [],
     blog: {
